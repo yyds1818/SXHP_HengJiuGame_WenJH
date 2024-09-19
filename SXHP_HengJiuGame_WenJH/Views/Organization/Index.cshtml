@@ -1,0 +1,331 @@
+﻿<style>
+    .AddParent {
+        display: none;
+    }
+
+    .AddorEdit {
+        display: none;
+    }
+
+    .layui-table-page, .layui-table-box {
+        background-color: white;
+    }
+</style>
+<body>
+    <div style="background-color:#f1f1f1;height:20%">
+        <div class="padhead" style="margin: 2%;">
+            <span class="layui-breadcrumb" lay-separator=">">
+                <a href="/Home/indexv">基本信息管理</a>
+                <a><cite>组织机构管理</cite></a>
+            </span>
+        </div>
+        <div class="demoTable" style="margin: 3%;">
+            组织机构名称:
+            <div class="layui-inline">
+                <input class="layui-input" name="StructureName" id="StructureName" autocomplete="off">
+            </div>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            组织机构代码:
+            <div class="layui-inline">
+                <input class="layui-input" name="StructureCode" id="StructureCode" autocomplete="off">
+            </div>
+            &nbsp;&nbsp;
+            <button class="layui-btn layui-bg-blue" data-type="reload" lay-on="Search"><i class="layui-icon layui-icon-search"></i>&nbsp;查询</button>
+            &nbsp;&nbsp;
+            <button class="layui-btn" data-type="reload" lay-on="TopAdd"><i class="layui-icon layui-icon-add-1"></i>&nbsp;添加顶级机构</button>
+        </div>
+    </div>
+    <div style=" margin: 2%; ">
+        <table class="layui-hide" id="ID-treeTable-demo"></table>
+    </div>
+    <script type="text/html" id="TPL-treeTable-demo">
+        <div class="layui-btn-container">
+            <button class="layui-btn layui-btn-sm" lay-event="getChecked">获取选中数据</button>
+        </div>
+    </script>
+    <script type="text/html" id="TPL-treeTable-demo-tools">
+        <div class="layui-btn-container">
+            <a class="layui-btn layui-btn-xs" lay-event="SubsetAdd">添加子集</a>
+            <a class="layui-btn layui-btn-warm layui-btn-xs" lay-event="Edit">编辑</a>
+            <a class="layui-btn layui-btn-xs layui-bg-red" lay-event="Del">删除</a>
+        </div>
+    </script>
+
+    <div class="AddParent">
+        <form class="layui-form layui-form-pane" lay-filter="demo-val-Parent" style="margin-top: 5%;">
+            <div class="layui-form-item">
+                <label class="layui-form-label" style="width:125px">组织机构名称</label>
+                <div class="layui-input-block">
+                    <input type="text" name="StructureName" autocomplete="off" placeholder="请输入" lay-verify="required" class="layui-input" style="width:95%">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label" style="width:125px">组织机构代码</label>
+                <div class="layui-input-block">
+                    <input type="text" name="StructureCode" autocomplete="off" placeholder="请输入" lay-verify="required" class="layui-input" style="width:95%">
+                </div>
+            </div>
+            <div class="layui-form-item" style="text-align: center; margin-top: 8%;">
+                <button type="submit" class="layui-btn" lay-submit lay-filter="EditDemo">确认添加</button>
+                &nbsp;&nbsp;&nbsp;
+                <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="AddorEdit">
+        <form class="layui-form layui-form-pane" lay-filter="demo-val-Children" style="margin-top: 5%;">
+            <input type="hidden" name="ID" />
+            <input type="hidden" name="ParentId" />
+            <div class="layui-form-item">
+                <label class="layui-form-label" style="width:125px">上级机构名称</label>
+                <div class="layui-input-block">
+                    <input type="text" name="ParentStructureName" id="ParentStructureName" disabled="disabled" autocomplete="off" class="layui-input" style="width:95%">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label" style="width:125px">上级机构代码</label>
+                <div class="layui-input-block">
+                    <input type="text" name="ParentStructureCode" id="ParentStructureCode" disabled="disabled" autocomplete="off" class="layui-input" style="width:95%">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label" style="width:125px">上级机构级别</label>
+                <div class="layui-input-block">
+                    <input type="text" name="Levels" disabled="disabled" id="Levels" autocomplete="off" class="layui-input" style="width:95%">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label" style="width:125px">组织机构名称</label>
+                <div class="layui-input-block">
+                    <input type="text" name="StructureName" autocomplete="off" placeholder="请输入" lay-verify="required" class="layui-input" style="width:95%">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label" style="width:125px">组织机构代码</label>
+                <div class="layui-input-block">
+                    <input type="text" name="StructureCode" autocomplete="off" placeholder="请输入" lay-verify="required" class="layui-input" style="width:95%">
+                </div>
+            </div>
+            <div class="layui-form-item" style="text-align: center; margin-top: 8%;">
+                <button type="button" class="layui-btn" lay-submit lay-filter="Verify">确认</button>
+                &nbsp;&nbsp;&nbsp;
+                <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        layui.use(function () {
+            var treeTable = layui.treeTable;
+            var layer = layui.layer;
+            var util = layui.util;
+            var form = layui.form;
+            // 渲染
+            var inst = treeTable.render({
+                elem: '#ID-treeTable-demo',
+                url: '/Organization/getdata', // 此处为静态模拟数据，实际使用时需换成真实接口
+                maxHeight: '538px',
+                toolbar: '#TPL-treeTable-demo',
+                cols: [[
+                    { type: 'checkbox', fixed: 'left' },
+                    { field: 'name', title: '组织机构名称', width: '20%' },
+                    { field: 'code', title: '组织机构代码', width: '15%' },
+                    { field: 'type', title: '等级', width: '8%', sort: true },
+                    {
+                        field: 'createDate', title: '创建时间', width: '26%', templet: function (d) {
+                            // 获取日期
+                            var date = FormDateStringFun(d.createDate)
+                            // 转换成需要的格式
+                            return util.toDateString(date, 'yyyy-MM-dd');
+                        }
+                    },
+                    { fixed: "right", title: "操作", width: '27%', minWidth: 180, align: "center", toolbar: "#TPL-treeTable-demo-tools" }
+                ]],
+                page: true
+            });
+            // 表头工具栏工具事件
+            treeTable.on("toolbar(ID-treeTable-demo)", function (obj) {
+                var config = obj.config;
+                var tableId = config.id;
+                var status = treeTable.checkStatus(tableId);
+                // 获取选中行
+                if (obj.event === "getChecked") {
+                    if (!status.data.length) return layer.msg('无选中数据');
+                    console.log(status);
+                    layer.alert("当前数据选中已经输出到控制台，<br>您可按 F12 从控制台中查看结果。");
+                }
+            });
+
+            // 获取当前行父级的元素
+            function SearchParent(demo) {
+                $.ajax({
+                    url: "/Organization/GetParent",
+                    type: "post",
+                    data: demo,
+                    success: function (res) {
+                        // 使用id选择器对值进行赋值
+                        $("#ParentStructureName").val(res.StructureName);
+                        $("#ParentStructureCode").val(res.StructureCode);
+                        $("#Levels").val(res.Type);
+                    }
+                })
+            }
+
+            // 单元格工具事件
+            treeTable.on('tool(' + inst.config.id + ')', function (obj) {
+                var layEvent = obj.event; // 获得 lay-event 对应的值
+                var trData = obj.data;
+                // 添加子集方法
+                if (layEvent === "SubsetAdd") {
+                    layer.open({
+                        type: 1, // page 层类型
+                        area: ['600px', '500px'],
+                        title: '新增子集机构',
+                        shade: 0.6, // 遮罩透明度
+                        shadeClose: true, // 点击遮罩区域，关闭弹层
+                        /*maxmin: true,*/ // 允许全屏最小化
+                        anim: 0, // 0-6 的动画形式，-1 不开启
+                        content: $(".AddorEdit"),
+                        end: function () {
+                            $(".AddorEdit").hide();
+                        }
+                    });
+                    // 打开表单2时，对表单指定内容赋值
+                    form.val('demo-val-Children', {
+                        "ID": null,
+                        "ParentId": trData.id,
+                        "ParentStructureName": trData.name,
+                        "ParentStructureCode": trData.code,
+                        "Levels": trData.type,
+                        "StructureName": "", // "name": "value"
+                        "StructureCode": ""
+                    })
+                }
+                // 修改方法
+                else if (layEvent === "Edit") {
+                    layer.open({
+                        type: 1, // page 层类型
+                        area: ['600px', '500px'],
+                        title: '修改机构',
+                        shade: 0.6, // 遮罩透明度
+                        shadeClose: true, // 点击遮罩区域，关闭弹层
+                        /*maxmin: true,*/ // 允许全屏最小化
+                        anim: 0, // 0-6 的动画形式，-1 不开启
+                        content: $(".AddorEdit"),
+                        end: function () {
+                            $(".AddorEdit").hide();
+                        }
+                    });
+                    // 调用
+                    SearchParent(trData);
+                    // 打开表单2时，赋值
+                    form.val('demo-val-Children', {
+                        "ID": trData.id,
+                        "ParentId": trData.parentId,
+                        "StructureName": trData.name, // "name": "value"
+                        "StructureCode": trData.code
+                    });
+                }
+                else if (layEvent === "Del") {
+                    // 判断是否有子节点
+                    if (trData.isParent == false) {
+                        layer.confirm('真的删除组织机构[' + trData.name + ']么？', function (index) {
+                            $.ajax({
+                                url: "/Organization/delbase",
+                                type: "post",
+                                data: trData,
+                                success: function (res) {
+                                    if (res.code == 0) {
+                                        layer.msg(res.msg, { icon: 1, time: 1000 }, function () {
+                                            layer.close(index);
+                                            treeTable.reload("ID-treeTable-demo");
+                                        })
+                                    } else {
+                                        layer.msg(res.msg, { icon: 2, time: 1000 })
+                                    }
+                                }
+                            })
+                        });
+                    } else {
+                        layer.msg("此节点下面还有子节点，请先删除子节点", { icon: 2, time: 1000 })
+                    }
+
+                }
+            });
+
+            // lay-on按钮方法
+            util.on('lay-on', {
+                // 添加顶级菜单
+                'TopAdd': function () {
+                    layer.open({
+                        type: 1, // page 层类型
+                        area: ['500px', '300px'],
+                        title: '新增顶级机构',
+                        shade: 0.6, // 遮罩透明度
+                        shadeClose: true, // 点击遮罩区域，关闭弹层
+                        /*maxmin: true,*/ // 允许全屏最小化
+                        anim: 0, // 0-6 的动画形式，-1 不开启
+                        content: $(".AddParent"),
+                        // 关闭弹窗后，执行的方法
+                        end: function () {
+                            $(".AddParent").hide();
+                        }
+                    });
+                },
+                // 查询按钮
+                'Search': function () {
+                    treeTable.reload('ID-treeTable-demo', {
+                        where: {
+                            StructureName: $("#StructureName").val(),
+                            StructureCode: $("#StructureCode").val()
+                        }
+                    })
+                }
+            })
+
+            // 表单1提交，添加子集菜单和修改的请求
+            form.on('submit(Verify)', function (data) {
+                var field = data.field;
+                $.ajax({
+                    url: "/Organization/AddorEditBase",
+                    type: "post",
+                    data: field,
+                    success: function (res) {
+                        if (res.code == 0) {
+                            layer.msg(res.msg, { icon: 1, time: 1000 }, function () {
+                                layer.closeAll();
+                                treeTable.reload("ID-treeTable-demo");
+                            })
+                        } else {
+                            layer.msg(res.msg, { icon: 2, time: 1000 })
+                        }
+                    }
+                })
+                return false;
+            })
+
+            // 表单2提交，添加顶级菜单的请求
+            form.on('submit(EditDemo)', function (data) {
+                var field = data.field;
+                $.ajax({
+                    url: "/Organization/TopAddBase",
+                    type: "post",
+                    data: field,
+                    success: function (res) {
+                        if (res.code == 0) {
+                            layer.msg(res.msg, { icon: 1, time: 1000 }, function () {
+                                layer.closeAll();
+                                treeTable.reload("ID-treeTable-demo");
+                            })
+                        } else {
+                            layer.msg(res.msg, { icon: 2, time: 1000 })
+                        }
+                    }
+                })
+                return false;
+            })
+        });
+    </script>
+
+</body>

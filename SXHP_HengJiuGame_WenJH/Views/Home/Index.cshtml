@@ -1,0 +1,172 @@
+﻿@using SXHP_HengJiuGame_WenJH.Models;
+@{
+    UserInfo user = new UserInfo();
+    if (ViewBag.User != null)
+    {
+        user = ViewBag.User;
+    }
+}
+<style>
+    .layui-layout-left {
+        align-items: center;
+        display: flex;
+        height: 62px;
+    }
+</style>
+<div class="layui-layout layui-layout-admin">
+    <div class="layui-header">
+        <div class="layui-logo layui-hide-xs layui-bg-black">恒久游戏管理系统</div>
+        <!-- 头部区域（可配合layui 已有的水平导航） -->
+        <ul class="layui-nav layui-layout-left">
+            <li><marquee style="width: 500px;margin-left: 20px" id="date"></marquee></li>
+        </ul>
+        <ul class="layui-nav layui-layout-right">
+            <li class="layui-nav-item layui-hide layui-show-sm-inline-block">
+                <a href="javascript:;">
+                    <img src="//unpkg.com/outeres@0.0.10/img/layui/icon-v2.png" class="layui-nav-img">
+                    @user.UserName
+                </a>
+                <dl class="layui-nav-child">
+                    <dd><a href="javascript:;" onclick="ModifyPassFun()">修改密码</a></dd>
+                    <dd><a href="javascript:;" onclick="ModifyInfoFun()">修改个人信息</a></dd>
+                    <dd><a href="javascript:;" onclick="QuitLoginFun()">退出登录</a></dd>
+                </dl>
+            </li>
+            <li class="layui-nav-item" lay-header-event="menuRight" lay-unselect>
+                <a href="javascript:;">
+                    <i class="layui-icon layui-icon-more-vertical"></i>
+                </a>
+            </li>
+        </ul>
+    </div>
+    <div class="layui-side layui-bg-black">
+        <div class="layui-side-scroll">
+            <!-- 左侧导航区域（可配合layui已有的垂直导航） -->
+            <ul class="layui-nav layui-nav-tree" lay-filter="test">
+                <li class="layui-nav-item layui-nav-itemed">
+                    <a href="javascript:;">基本信息管理</a>
+                    <dl class="layui-nav-child">
+                        <dd><a href="javascript:;" onclick="ToUrl('Job')">职位管理</a></dd>
+                        <dd><a href="javascript:;" onclick="ToUrl('Organization')">组织机构管理</a></dd>
+                        <dd><a href="javascript:;" onclick="ToUrl('EmpBasicInfo')">员工基本信息管理</a></dd>
+                    </dl>
+                </li>
+                <li class="layui-nav-item">
+                    <a href="javascript:;">权限管理</a>
+                    <dl class="layui-nav-child">
+                        <dd><a href="javascript:;" onclick="ToUrl('UserRole')">用户角色管理</a></dd>
+                        <dd><a href="javascript:;" onclick="ToUrl('RoleMenu')">角色菜单管理</a></dd>
+                        <dd><a href="javascript:;" onclick="ToUrl('Menu')">菜单管理</a></dd>
+                    </dl>
+                </li>
+                <li class="layui-nav-item">
+                    <a href="javascript:;">游戏模块管理</a>
+                    <dl class="layui-nav-child">
+                        <dd><a href="javascript:;" onclick="ToUrl('Game')">游戏管理</a></dd>
+                        <dd><a href="javascript:;" onclick="ToUrl('GameRole')">角色管理</a></dd>
+                        <dd><a href="javascript:;">技能管理</a></dd>
+                        <dd><a href="javascript:;">皮肤管理</a></dd>
+                        <dd><a href="javascript:;">玩家管理</a></dd>
+                    </dl>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <div class="layui-body" style="text-align:center; background-color:#f1f1f1">
+        <!-- 内容主体区域 -->
+        <iframe id="demo" src="/home/blank" style="width: 98%; height: 98%; border: 0; margin-top: 8px;"></iframe>
+    </div>
+    <div class="layui-footer">
+        <!-- 底部固定区域 -->
+        底部固定区域
+    </div>
+</div>
+
+<script>
+    layui.use(['element', 'layer', 'util'], function () {
+        var layer = layui.layer;
+        var util = layui.util;
+        var $ = layui.$;
+
+        //头部事件
+        util.event('lay-header-event', {
+            menuRight: function () {  // 右侧菜单事件
+                layer.open({
+                    type: 1,
+                    title: '更多',
+                    content: '<div style="padding: 15px;">处理右侧面板的操作</div>',
+                    area: ['260px', '100%'],
+                    offset: 'rt', // 右上角
+                    anim: 'slideLeft', // 从右侧抽屉滑出
+                    shadeClose: true,
+                    scrollbar: false
+                });
+            }
+        });
+    });
+
+    function QuitLoginFun() {
+        layer.confirm('确定要退出吗？', {
+            btn: ["退出", "取消"]
+        }, function () {
+            $.ajax({
+                url: "/home/QuitLoginBase",
+                type: "post",
+                success: function () {
+                    window.location.href = "/login/index";
+                }
+            })
+        })
+    }
+
+    function ModifyInfoFun() {
+        // 在此处输入 layer 的任意代码
+        layer.open({
+            type: 2, // page 层类型
+            area: ['970px', '570px'],
+            title: '修改个人信息',
+            shade: 0.6, // 遮罩透明度
+            shadeClose: true, // 点击遮罩区域，关闭弹层
+            maxmin: true, // 允许全屏最小化
+            anim: 0, // 0-6 的动画形式，-1 不开启
+            content: '/home/modifyinfo'
+        });
+    }
+
+    function ModifyPassFun() {
+        // 在此处输入 layer 的任意代码
+        layer.open({
+            type: 2, // ifrmae 层类型
+            area: ['630px', '380px'],
+            title: '修改密码',
+            shade: 0.6, // 遮罩透明度
+            shadeClose: true, // 点击遮罩区域，关闭弹层
+            maxmin: true, // 允许全屏最小化
+            anim: 0, // 0-6 的动画形式，-1 不开启
+            content: '/Home/ModifyPass'
+        });
+    }
+
+    // 早中晚时间变化
+    function GetDate() {
+        var date = new Date();
+        const hour = date.getHours();
+        /*console.log(hour);*/
+        if (hour < 12) {
+            document.getElementById("date").innerText = "早上,一只周世康爱狗叫~爱狗叫~";
+        } else if (hour < 18) {
+            document.getElementById("date").innerText = "中午,两只周世康爱狗叫~爱狗叫~";
+        } else {
+            document.getElementById("date").innerText = "晚上,三只周世康爱狗叫~爱狗叫~";
+        }
+    }
+
+    function ToUrl(value) {
+        $("#demo").attr("src", "/" + value + "/index");
+    }
+
+    // 页面加载时的事件
+    window.onload = function () {
+        GetDate();
+    };
+</script>

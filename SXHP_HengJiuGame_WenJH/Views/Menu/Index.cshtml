@@ -1,0 +1,313 @@
+﻿<style>
+    .AddParent, .AddorEdit {
+        display: none;
+    }
+    .layui-table-page, .layui-table-box {
+        background-color: white;
+    }
+</style>
+<body>
+    <div style="height:20%">
+        <div class="padhead" style="margin: 2%;">
+            <span class="layui-breadcrumb" lay-separator=">">
+                <a href="/Home/Blank">权限管理</a>
+                <a><cite>菜单管理</cite></a>
+            </span>
+        </div>
+        <div class="demoTable" style="margin: 3%;">
+            菜单名称:
+            <div class="layui-inline">
+                <input class="layui-input" name="MenuName" id="MenuName" autocomplete="off">
+            </div>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            菜单代码:
+            <div class="layui-inline">
+                <input class="layui-input" name="MenuCode" id="MenuCode" autocomplete="off">
+            </div>
+            &nbsp;&nbsp;
+            <button class="layui-btn layui-bg-blue" data-type="reload" lay-on="MenuSearch"><i class="layui-icon layui-icon-search"></i>&nbsp;查询</button>
+            &nbsp;&nbsp;
+            <button class="layui-btn" data-type="reload" lay-on="TopAdd"><i class="layui-icon layui-icon-add-1"></i>&nbsp;添加顶级菜单</button>
+        </div>
+    </div>
+
+    <div style="margin:2%">
+        <table class="layui-hide" id="ID-treeTable-demo"></table>
+    </div>
+    
+    <script type="text/html" id="TPL-treeTable-demo-tools">
+        <div class="layui-btn-container">
+            <a class="layui-btn layui-btn-xs" lay-event="SubsetAdd">添加子集</a>
+            <a class="layui-btn layui-btn-warm layui-btn-xs" lay-event="Edit">编辑</a>
+            <a class="layui-btn layui-btn-xs layui-bg-red" lay-event="Del">删除</a>
+        </div>
+    </script>
+
+    <div class="AddParent">
+        <form class="layui-form layui-form-pane" lay-filter="demo-val-Parent" style="margin-top: 5%;">
+            <div class="layui-form-item">
+                <label class="layui-form-label" style="width:125px">菜单名称</label>
+                <div class="layui-input-block">
+                    <input type="text" name="ParentMenuName" autocomplete="off" placeholder="请输入" lay-verify="required" class="layui-input" style="width:95%">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label" style="width:125px">菜单代码</label>
+                <div class="layui-input-block">
+                    <input type="text" name="ParentMenuCode" autocomplete="off" placeholder="请输入" lay-verify="required" class="layui-input" style="width:95%">
+                </div>
+            </div>
+            <div class="layui-form-item" style="text-align: center; margin-top: 8%;">
+                <button type="submit" class="layui-btn" lay-submit lay-filter="EditDemo">确认添加</button>
+                &nbsp;&nbsp;&nbsp;
+                <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="AddorEdit">
+        <form class="layui-form layui-form-pane" lay-filter="demo-val-Children" style="margin-top: 5%;">
+            <input type="hidden" name="ID" />
+            <input type="hidden" name="ParentId" />
+            <div class="layui-form-item">
+                <label class="layui-form-label" style="width:125px">上级菜单名称</label>
+                <div class="layui-input-block">
+                    <input type="text" name="ParentMenuName" id="ParentMenuName" disabled="disabled" autocomplete="off" class="layui-input" style="width:95%">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label" style="width:125px">上级菜单代码</label>
+                <div class="layui-input-block">
+                    <input type="text" name="ParentMenuCode" id="ParentMenuCode" disabled="disabled" autocomplete="off" class="layui-input" style="width:95%">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label" style="width:125px">上级菜单级别</label>
+                <div class="layui-input-block">
+                    <input type="text" name="Type" disabled="disabled" id="Type" autocomplete="off" class="layui-input" style="width:95%">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label" style="width:125px">菜单名称</label>
+                <div class="layui-input-block">
+                    <input type="text" name="MenuName" autocomplete="off" placeholder="请输入" lay-verify="required" class="layui-input" style="width:95%">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label" style="width:125px">菜单代码</label>
+                <div class="layui-input-block">
+                    <input type="text" name="MenuCode" autocomplete="off" placeholder="请输入" lay-verify="required" class="layui-input" style="width:95%">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label" style="width:125px">菜单链接</label>
+                <div class="layui-input-block">
+                    <input type="text" name="MenuUrl" autocomplete="off" lay-verify="required" class="layui-input" style="width:95%">
+                </div>
+            </div>
+            <div class="layui-form-item" style="text-align: center; margin-top: 8%;">
+                <button type="button" class="layui-btn" lay-submit lay-filter="AddDemo">确认</button>
+                &nbsp;&nbsp;&nbsp;
+                <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        layui.use(function () {
+            var treeTable = layui.treeTable;
+            var layer = layui.layer;
+            var util = layui.util;
+            var form = layui.form;
+            // 渲染
+            var inst = treeTable.render({
+                elem: '#ID-treeTable-demo',
+                url: '/Menu/getdata', // 此处为静态模拟数据，实际使用时需换成真实接口
+                height: '488px',
+                toolbar: '#TPL-treeTable-demo',
+                cols: [[
+                    { type: 'numbers',title: '序号', fixed: 'left' },
+                    { field: 'name', title: '菜单名称', width: '20%' },
+                    { field: 'code', title: '菜单代码', width: '20%' },
+                    { field: 'url', title: '菜单链接', width: '15%' },
+                    {
+                        field: 'type', title: '等级', width: '10%', sort: true, templet: function (d) {
+                            if (d.type == 1) {
+                                return "<span style='font-weight:bold;color:red;'>顶级菜单</span>";
+                            } else {
+                                return "<span style='font-weight:bold;color:blue;'>子级菜单</span>";
+                            }
+                        }
+                    },
+                    {
+                        field: 'createDate', title: '创建时间', width: '12%', templet: function (d) {
+                            var date = FormDateStringFun(d.createDate)
+                            return util.toDateString(date,'yyyy-MM-dd');
+                        }
+                    },
+                    { fixed: "right", title: "操作", width: 230, minWidth: 180, align: "center", toolbar: "#TPL-treeTable-demo-tools" }
+                ]],
+                page: true
+            });
+
+            // 查询父级方法
+            function SearchParent(demo) {
+                $.ajax({
+                    url: "/Menu/GetParent",
+                    type: "post",
+                    data: demo,
+                    success: function (res) {
+                        $("#ParentMenuName").val(res.data[0].MenuName);
+                        $("#ParentMenuCode").val(res.data[0].MenuCode);
+                        $("#Type").val(res.data[0].Type);
+                    }
+                })
+            }
+
+            // 单元格工具事件
+            treeTable.on('tool(' + inst.config.id + ')', function (obj) {
+                var layEvent = obj.event; // 获得 lay-event 对应的值
+                var trData = obj.data;
+                if (layEvent === "SubsetAdd") {
+                    layer.open({
+                        type: 1, // page 层类型
+                        area: ['600px', '500px'],
+                        title: '新增子集菜单',
+                        shade: 0.6, // 遮罩透明度
+                        shadeClose: true, // 点击遮罩区域，关闭弹层
+                        /*maxmin: true,*/ // 允许全屏最小化
+                        anim: 0, // 0-6 的动画形式，-1 不开启
+                        content: $(".AddorEdit"),
+                        end: function () {
+                            $(".AddorEdit").hide();
+                        }
+                    });
+                    form.val('demo-val-Children', {
+                        "ID": null,
+                        "ParentId": trData.id,
+                        "ParentMenuName": trData.name,
+                        "ParentMenuCode": trData.code,
+                        "Type": trData.type,
+                        "MenuName": "", // "name": "value"
+                        "MenuCode": "",
+                        "MenuUrl": ""
+                    })
+                } else if (layEvent === "Edit") {
+                    layer.open({
+                        type: 1, // page 层类型
+                        area: ['600px', '500px'],
+                        title: '修改菜单',
+                        shade: 0.6, // 遮罩透明度
+                        shadeClose: true, // 点击遮罩区域，关闭弹层
+                        /*maxmin: true,*/ // 允许全屏最小化
+                        anim: 0, // 0-6 的动画形式，-1 不开启
+                        content: $(".AddorEdit"),
+                        end: function () {
+                            $(".AddorEdit").hide();
+                        }
+                    });
+                    SearchParent(trData);
+                    form.val('demo-val-Children', {
+                        "ID": trData.id,
+                        "ParentId": trData.parentId,
+                        "MenuName": trData.name, // "name": "value"
+                        "MenuCode": trData.code,
+                        "MenuUrl": trData.url
+                    });
+                } else if (layEvent === "Del") {
+                    if (trData.isParent == false) {
+                        layer.confirm('真的删除菜单[' + trData.name + ']么？', function (index) {
+                            $.ajax({
+                                url: "/menu/delbase",
+                                type: "post",
+                                data: trData,
+                                success: function (res) {
+                                    if (res.code == 0) {
+                                        layer.msg(res.msg, { icon: 1, time: 1000 }, function () {
+                                            layer.close(index);
+                                            treeTable.reload("ID-treeTable-demo");
+                                        })
+                                    } else {
+                                        layer.msg(res.msg, { icon: 2, time: 1000 })
+                                    }
+                                }
+                            })
+                        });
+                    } else {
+                        layer.msg("此节点下面还有子节点，请先删除子节点", { icon: 2, time: 1000 })
+                    }
+                }
+            });
+
+            util.on('lay-on', {
+                'TopAdd': function () {
+                    layer.open({
+                        type: 1, // page 层类型
+                        area: ['500px', '300px'],
+                        title: '新增顶级菜单',
+                        shade: 0.6, // 遮罩透明度
+                        shadeClose: true, // 点击遮罩区域，关闭弹层
+                        /*maxmin: true,*/ // 允许全屏最小化
+                        anim: 0, // 0-6 的动画形式，-1 不开启
+                        content: $(".AddParent"),
+                        end: function () {
+                            $(".AddParent").hide();
+                        }
+                    });
+                },
+                'MenuSearch': function () {
+                    treeTable.reload('ID-treeTable-demo', {
+                        where: {
+                            MenuName: $("#MenuName").val(),
+                            MenuCode: $("#MenuCode").val()
+                        }
+                    })
+                    //table.reloadData('table_job', {
+                    //    url: "/job/jobsearchbase?jobname=" + name + "&jobcode=" + code
+                    //});
+                }
+            })
+
+            form.on('submit(AddDemo)', function (data) {
+                var field = data.field;
+                $.ajax({
+                    url: "/Menu/AddorEditBase",
+                    type: "post",
+                    data: field,
+                    success: function (res) {
+                        if (res.code == 0) {
+                            layer.msg(res.msg, { icon: 1, time: 1000 }, function () {
+                                layer.closeAll();
+                                treeTable.reload("ID-treeTable-demo");
+                            })
+                        } else {
+                            layer.msg(res.msg, { icon: 2, time: 1000 })
+                        }
+                    }
+                })
+                return false;
+            })
+
+            form.on('submit(EditDemo)', function (data) {
+                var field = data.field;
+                $.ajax({
+                    url: "/Menu/AddBase",
+                    type: "post",
+                    data: field,
+                    success: function (res) {
+                        if (res.code == 0) {
+                            layer.msg(res.msg, { icon: 1, time: 1000 }, function () {
+                                layer.closeAll();
+                                treeTable.reload("ID-treeTable-demo");
+                            })
+                        } else {
+                            layer.msg(res.msg, { icon: 2, time: 1000 })
+                        }
+                    }
+                })
+                return false;
+            })
+        });
+    </script>
+
+</body>

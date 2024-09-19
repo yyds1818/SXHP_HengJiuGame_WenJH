@@ -1,0 +1,152 @@
+﻿@using SXHP_HengJiuGame_WenJH.Models;
+@{
+    UserInfo user = new UserInfo();
+    if (ViewBag.User != null)
+    {
+        user = ViewBag.User;
+    }
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Demo</title>
+    <style>
+        .layui-inline {
+            width: 40%;
+        }
+    </style>
+</head>
+<body>
+    <form class="layui-form">
+        <div class="layui-form-item">
+            <label class="layui-form-label">用户账号</label>
+            <div class="layui-input-block">
+                <input type="text" name="UserCode" lay-verify="required" disabled="disabled" value="@user.UserCode" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">用户名称</label>
+            <div class="layui-input-block">
+                <input type="text" name="UserName" lay-verify="required" autocomplete="off" value="@user.UserName" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label">性别</label>
+                @{
+                    if (user.sex == false)
+                    {
+                        <div class="layui-input-block">
+                            <input type="radio" name="sex" value="false" title="男" checked>
+                            <input type="radio" name="sex" value="true" title="女">
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="layui-input-block">
+                            <input type="radio" name="sex" value="false" title="男">
+                            <input type="radio" name="sex" value="true" title="女" checked>
+                        </div>
+                    }
+                }
+            </div>
+            <div class="layui-inline">
+                <label class="layui-form-label">籍贯</label>
+                <div class="layui-input-block">
+                    <input type="text" name="Native" placeholder="请输入籍贯" value="@user.Native" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">身份证</label>
+            <div class="layui-input-block">
+                <input type="text" name="IDCard" placeholder="请输入身份证" value="@user.IDCard" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label">验证邮箱</label>
+                <div class="layui-input-block">
+                    <input type="email" name="Email" placeholder="请输入邮箱" value="@user.Email" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-inline">
+                <label class="layui-form-label">电话</label>
+                <div class="layui-input-block">
+                    <input type="tel" name="TelPhone" placeholder="请输入电话" value="@user.TelPhone" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">是否离职</label>
+            <div class="layui-input-block">
+                @{
+                    if (user.Dimission == false)
+                    {
+                        <select name="Dimission">
+                            <option value="">请选择</option>
+                            <option value="false" selected>在职</option>
+                            <option value="true">离职</option>
+                        </select>
+                    }
+                    else if (user.Dimission == true)
+                    {
+                        <select name="Dimission">
+                            <option value="">请选择</option>
+                            <option value="false">在职</option>
+                            <option value="true" selected>离职</option>
+                        </select>
+                    }
+                }
+            </div>
+        </div>
+        <div class="layui-form-item layui-form-text">
+            <label class="layui-form-label">地址</label>
+            <div class="layui-input-block">
+                <textarea placeholder="请输入内容" class="layui-textarea" name="Address">@user.Address</textarea>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <button type="submit" class="layui-btn" lay-submit lay-filter="demo1">立即提交</button>
+                <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+            </div>
+        </div>
+    </form>
+
+    <script>
+        layui.use(['form'], function () {
+            var form = layui.form;
+            var layer = layui.layer;
+
+            // 提交事件
+            form.on('submit(demo1)', function (data) {
+                var field = data.field; // 获取表单字段值
+                // 此处可执行 Ajax 等操作
+                // …
+                $.ajax({
+                    url: "/home/ModifyInfoBase",
+                    type: "post",
+                    data: field,
+                    success: function (res) {
+                        if (res.code == 0) {
+                            layer.msg(res.message, { icon: 1, time: 1000 }, function () {
+                                var index = parent.layer.getFrameIndex(window.name); // 先得到当前 iframe 层的索引
+                                parent.layer.close(index); // 再执行关闭
+                                parent.window.location.href = "/home/index";
+                            })
+                        } else {
+                            layer.msg(res.message, { icon: 2, time: 1000 })
+                        }
+                    }
+                })
+                return false; // 阻止默认 form 跳转
+            });
+        });
+    </script>
+
+</body>
+</html>

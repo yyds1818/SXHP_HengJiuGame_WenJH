@@ -1,0 +1,227 @@
+﻿<style>
+    .EditorAdd {
+        display: none;
+    }
+    .layui-table-box{
+        background-color:white;
+    }
+    .layui-table-header .layui-table {
+        width: 100%;
+    }
+    .layui-table-page {
+        background-color: white;
+    }
+</style>
+
+<body>
+    <div class="padhead" style="margin: 2%;">
+        <span class="layui-breadcrumb" lay-separator=">">
+            <a href="/Home/Blank">基本信息管理</a>
+            <a><cite>职位管理</cite></a>
+        </span>
+    </div>
+    <div class="demoTable" style="margin: 3%;">
+        职位名称:
+        <div class="layui-inline">
+            <input class="layui-input" name="jobname" id="jobname" autocomplete="off">
+        </div>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        职位代码:
+        <div class="layui-inline">
+            <input class="layui-input" name="jobcode" id="jobcode" autocomplete="off">
+        </div>
+        &nbsp;&nbsp;
+        <button class="layui-btn layui-bg-blue" data-type="reload" lay-on="JobSearch"><i class="layui-icon layui-icon-search"></i>&nbsp;查询</button>
+        &nbsp;&nbsp;
+        <button class="layui-btn" data-type="reload" lay-on="JobAdd"><i class="layui-icon layui-icon-add-1"></i>&nbsp;添加</button>
+    </div>
+
+    <div style="margin: 2%; ">
+        <table class="layui-hide" id="table_job" lay-filter="user" border="1"></table>
+    </div>
+    
+
+    <div class="EditorAdd">
+        <form class="layui-form layui-form-pane" lay-filter="demo-val-filter" style="margin-top: 5%;">
+            <input type="hidden" name="ID">
+            <div class="layui-form-item">
+                <label class="layui-form-label">职位名称</label>
+                <div class="layui-input-block">
+                    <input type="text" name="JobName" id="JobName" autocomplete="off" placeholder="请输入" lay-verify="required" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">职位代码</label>
+                <div class="layui-input-block">
+                    <input type="text" name="JobCode" id="JobCode" autocomplete="off" placeholder="请输入" lay-verify="required" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item" style="text-align: center; margin-top: 8%;">
+                <button type="submit" class="layui-btn" lay-submit lay-filter="Verify">确认</button>
+                &nbsp;&nbsp;&nbsp;
+                <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+            </div>
+        </form>
+    </div>
+
+    <script type="text/html" id="barDemo">
+        <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+        <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+    </script>
+
+    <script>
+        layui.use('table', function () {
+            var table = layui.table;
+            var layer = layui.layer;
+            var util = layui.util;
+            var form = layui.form;
+
+            //window.reloadJobTable = function () {
+            //    table.reload('table_job');
+            //};
+
+            // 职位信息表格展示
+            table.render({
+                elem: '#table_job'
+                , url: '/job/GetData'
+                , cols: [[
+                    { checkbox: true, fixed: true }
+                    , { type: 'numbers', title: 'ID', sort: true, fixed: true }
+                    , { field: 'JobName', width:'10%', title: '职位名称' }
+                    , { field: 'JobCode', width: '10%', title: '职位代码' }
+                    , { field: 'CreateUser', width: '14%', title: '创建用户' }
+                    , {
+                        field: 'CreateDate', width: '16%', title: '创建时间', templet: function (d) {
+                            return FormDateStringFun(d.CreateDate);
+                        }
+                    }
+                    , { field: 'ModifyUser', width: '14%', title: '修改用户' }
+                    , {
+                        field: 'ModIfyDate', width: '16%', title: '修改时间', templet: function (d) {
+                            return FormDateStringFun(d.ModIfyDate);
+                        }
+                    }
+                    , { title: '操作', width: 130, minWidth: 125, toolbar: '#barDemo', fixed: 'right' }
+                ]]
+                , page: true
+                , height: 470
+            });
+
+            // 按钮触发事件
+            util.on('lay-on', {
+                'JobAdd': function () {
+                    $("#JobCode").val("");
+                    $("#JobName").val("");
+                    layer.open({
+                        type: 1, // page 层类型
+                        area: ['500px', '300px'],
+                        title: '新增职位',
+                        shade: 0.6, // 遮罩透明度
+                        shadeClose: true, // 点击遮罩区域，关闭弹层
+                        /*maxmin: true,*/ // 允许全屏最小化
+                        anim: 0, // 0-6 的动画形式，-1 不开启
+                        content: $(".EditorAdd"),
+                        end: function () {
+                            $(".EditorAdd").hide();
+                        }
+                    });
+                },
+                'JobSearch': function () {
+                    table.reload('table_job', {
+                        where: {
+                            jobname: $("#jobname").val(),
+                            jobcode: $("#jobcode").val()
+                        }
+                    })
+                    //table.reloadData('table_job', {
+                    //    url: "/job/jobsearchbase?jobname=" + name + "&jobcode=" + code
+                    //});
+                }
+            })
+
+            form.on('submit(Verify)', function (data) {
+                var field = data.field;
+                $.ajax({
+                    url: "/job/AddorEditBase",
+                    type: "post",
+                    data: field,
+                    success: function (res) {
+                        if (res.code == 0) {
+                            layer.msg(res.msg, { icon: 1, time: 1000 }, function () {
+                                layer.closeAll();
+                                SearchFun();
+                            })
+                        } else {
+                            layer.msg(res.msg, { icon: 2, time: 1000 })
+                        }
+                    }
+                })
+                return false;
+            })
+
+            // 表格中的事件触发
+            table.on('tool(user)', function (obj) {
+                var data = obj.data;
+                if (obj.event === 'del') {
+                    layer.confirm('真的删除么', function (index) {
+                        $.ajax({
+                            url: "/job/delbase",
+                            type: "post",
+                            data: { ID: data.ID },
+                            success: function (res) {
+                                if (res.code == 0) {
+                                    layer.msg(res.msg, { icon: 1, time: 1000 }, function () {
+                                        layer.close(index);
+                                        SearchFun();
+                                    })
+                                } else {
+                                    layer.msg(res.msg, { icon: 2, time: 1000 })
+                                }
+                            }
+                        })
+                    });
+                } else if (obj.event === 'edit') {
+                    layer.open({
+                        type: 1, // page 层类型
+                        area: ['500px', '300px'],
+                        title: '修改职位',
+                        shade: 0.6, // 遮罩透明度
+                        shadeClose: true, // 点击遮罩区域，关闭弹层
+                        /*maxmin: true,*/ // 允许全屏最小化
+                        anim: 0, // 0-6 的动画形式，-1 不开启
+                        content: $(".EditorAdd"),
+                        end: function () {
+                            $(".EditorAdd").hide();
+                        }
+                    });
+                    form.val('demo-val-filter', {
+                        "ID": data.ID,
+                        "JobName": data.JobName, // "name": "value"
+                        "JobCode": data.JobCode,
+                    });
+                }
+
+            });
+
+            // 转换时间戳为日期方法
+            function FormDateStringFun(dateString) {
+                if (dateString == null) {
+                    return "";
+                }
+                var datestr = dateString.substring(6, dateString.length - 2);
+                /*console.log(datestr);*/
+                var date = new Date(parseInt(datestr));
+                return util.toDateString(date, 'yyyy-MM-dd');
+            }
+
+            // 更新表格数据
+            function SearchFun() {
+                table.reload('table_job')
+            }
+        });
+    </script>
+
+</body>
+
+
+

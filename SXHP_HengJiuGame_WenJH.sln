@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34330.188
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SXHP_HengJiuGame_WenJH", "SXHP_HengJiuGame_WenJH\SXHP_HengJiuGame_WenJH.csproj", "{E1E40BB6-5C0F-4081-95B2-520DC8A787A7}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E1E40BB6-5C0F-4081-95B2-520DC8A787A7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E1E40BB6-5C0F-4081-95B2-520DC8A787A7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E1E40BB6-5C0F-4081-95B2-520DC8A787A7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E1E40BB6-5C0F-4081-95B2-520DC8A787A7}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {3D44D3AA-CBC9-462F-9D74-17455E9AB143}
+	EndGlobalSection
+EndGlobal

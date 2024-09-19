@@ -1,0 +1,307 @@
+﻿<style>
+    .EditorAdd, .RoleMenu {
+        display: none;
+    }
+
+    .layui-table-box {
+        background-color: white;
+    }
+
+    .layui-table-header .layui-table, .layui-table-view .layui-table {
+        width: 100%;
+    }
+
+    .layui-table-page {
+        background-color: white;
+    }
+</style>
+
+<body>
+    <div class="padhead" style="margin: 2%;">
+        <span class="layui-breadcrumb" lay-separator=">">
+            <a href="/Home/Blank">权限管理</a>
+            <a><cite>角色菜单管理</cite></a>
+        </span>
+    </div>
+    <div class="demoTable" style="margin: 3%;">
+        角色名称:
+        <div class="layui-inline">
+            <input class="layui-input" name="name" id="name" autocomplete="off">
+        </div>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        角色代码:
+        <div class="layui-inline">
+            <input class="layui-input" name="code" id="code" autocomplete="off">
+        </div>
+        &nbsp;&nbsp;
+        <button class="layui-btn layui-bg-blue" data-type="reload" lay-on="Search"><i class="layui-icon layui-icon-search"></i>&nbsp;查询</button>
+        &nbsp;&nbsp;
+        <button class="layui-btn" data-type="reload" lay-on="Add"><i class="layui-icon layui-icon-add-1"></i>&nbsp;添加</button>
+    </div>
+
+    <div style="margin: 2%; ">
+        <table class="layui-hide" id="table_job" lay-filter="user"></table>
+    </div>
+
+    <div class="EditorAdd">
+        <form class="layui-form layui-form-pane" lay-filter="demo-val-filter" style="margin-top: 5%;">
+            <input type="hidden" name="ID" id="ID">
+            <div class="layui-form-item">
+                <label class="layui-form-label">角色名称</label>
+                <div class="layui-input-block">
+                    <input type="text" name="RoleName" id="RoleName" autocomplete="off" placeholder="请输入" lay-verify="required" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">角色代码</label>
+                <div class="layui-input-block">
+                    <input type="text" name="RoleCode" id="RoleCode" autocomplete="off" placeholder="请输入" lay-verify="required" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item" style="text-align: center; margin-top: 8%;">
+                <button type="submit" class="layui-btn" lay-submit lay-filter="Verify">确认</button>
+                &nbsp;&nbsp;&nbsp;
+                <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="RoleMenu">
+        <table class="layui-hide" id="ID-treeTable-demo" style="width:100%"></table>
+        <script type="text/html" id="TPL-treeTable-demo">
+            <div class="layui-btn-container">
+                <button class="layui-btn layui-btn-sm" lay-event="getChecked">确认设置</button>
+            </div>
+        </script>
+    </div>
+
+    <script type="text/html" id="barDemo">
+        <a class="layui-btn layui-btn-xs" lay-event="setting">设置菜单</a>
+        <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+        <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+    </script>
+
+    <script>
+        layui.use('table', function () {
+            var table = layui.table;
+            var treeTable = layui.treeTable;
+            var layer = layui.layer;
+            var util = layui.util;
+            var form = layui.form;
+            var roleId;
+
+            // 职位信息表格展示
+            table.render({
+                elem: '#table_job'
+                , url: '/RoleMenu/GetData'
+                , cols: [[
+                    { checkbox: true, fixed: true }
+                    , { type: 'numbers', title: 'ID', sort: true, fixed: true }
+                    , { field: 'RoleName', width: '15%', title: '角色名称' }
+                    , { field: 'RoleCode', width: '15%', title: '角色代码' }
+                    , {
+                        field: 'CreateDate', width: '15%', title: '创建时间', templet: function (d) {
+                            var date = FormDateStringFun(d.CreateDate)
+                            return util.toDateString(date, 'yyyy-MM-dd');
+                        }
+                    }
+                    , { field: 'MenuNames', width: '30%', title: '角色菜单列表' }
+                    , { title: '操作', width: 205, toolbar: '#barDemo', fixed: 'right' }
+                ]]
+                , page: true
+                , height: 488
+            });
+
+            treeTable.render({
+                elem: '#ID-treeTable-demo',
+                url: '/Menu/getdata', // 此处为静态模拟数据，实际使用时需换成真实接口
+                height: '501px',
+                toolbar: '#TPL-treeTable-demo',
+                cols: [[
+                    { type: 'checkbox', fixed: 'left' },
+                    { type: 'numbers', title: '序号', fixed: 'left' },
+                    { field: 'name', title: '菜单名称', width: 255 },
+                    { field: 'code', title: '菜单代码', width: 255 },
+                    { field: 'url', title: '菜单链接', width: 204 },
+                    {
+                        field: 'type', title: '等级', width: '10%', sort: true, templet: function (d) {
+                            if (d.type == 1) {
+                                return "<span style='font-weight:bold;color:red;'>顶级菜单</span>";
+                            } else {
+                                return "<span style='font-weight:bold;color:blue;'>子级菜单</span>";
+                            }
+                        }
+                    },
+                    {
+                        field: 'createDate', title: '创建时间', width: '15%', templet: function (d) {
+                            var date = FormDateStringFun(d.createDate)
+                            return util.toDateString(date, 'yyyy-MM-dd');
+                        }
+                    },
+                ]],
+                page: true,
+                tree: {
+                    view: { expandAllDefault: true }
+                }
+            });
+
+            treeTable.on("toolbar(ID-treeTable-demo)", function (obj) {
+                var config = obj.config;
+                var tableId = config.id;
+                var status = treeTable.checkStatus(tableId);
+                // 获取选中行
+                if (obj.event === "getChecked") {
+                    if (!status.data.length) return layer.msg('无选中数据');
+                    $.ajax({
+                        url: "/RoleMenu/AddRelation",
+                        type: "post",
+                        data: { menus: status.data, role: roleId },
+                        success: function (res) {
+                            if (res.code == 0) {
+                                layer.msg(res.msg, { icon: 1, time: 1000 }, function () {
+                                    layer.closeAll();
+                                    SearchFun();
+                                })
+                            } else {
+                                layer.msg(res.msg, { icon: 2, time: 1000 })
+                            }
+                        }
+                    })
+                }
+            });
+
+            // 按钮触发事件
+            util.on('lay-on', {
+                'Add': function () {
+                    $("#ID").val("");
+                    $("#RoleCode").val("");
+                    $("#RoleName").val("");
+                    layer.open({
+                        type: 1, // page 层类型
+                        area: ['500px', '300px'],
+                        title: '新增职位',
+                        shade: 0.6, // 遮罩透明度
+                        shadeClose: true, // 点击遮罩区域，关闭弹层
+                        anim: 0, // 0-6 的动画形式，-1 不开启
+                        content: $(".EditorAdd"),
+                        end: function () {
+                            $(".EditorAdd").hide();
+                        }
+                    });
+                },
+                'Search': function () {
+                    table.reload('table_job', {
+                        where: {
+                            rolename: $("#name").val(),
+                            rolecode: $("#code").val()
+                        }
+                    })
+                }
+            })
+
+            form.on('submit(Verify)', function (data) {
+                var field = data.field;
+                console.log(data);
+                $.ajax({
+                    url: "/RoleMenu/AddorEditBase",
+                    type: "post",
+                    data: field,
+                    success: function (res) {
+                        if (res.code == 0) {
+                            layer.msg(res.msg, { icon: 1, time: 1000 }, function () {
+                                layer.closeAll();
+                                SearchFun();
+                            })
+                        } else {
+                            layer.msg(res.msg, { icon: 2, time: 1000 })
+                        }
+                    }
+                })
+                return false;
+            })
+
+            // 表格中的事件触发
+            table.on('tool(user)', function (obj) {
+                var data = obj.data;
+                /*console.log(data);*/
+                if (obj.event === 'del') {
+                    layer.confirm('真的删除么', function (index) {
+                        $.ajax({
+                            url: "/RoleMenu/delbase",
+                            type: "post",
+                            data: { ID: data.ID },
+                            success: function (res) {
+                                if (res.code == 0) {
+                                    layer.msg(res.msg, { icon: 1, time: 1000 }, function () {
+                                        layer.close(index);
+                                        SearchFun();
+                                    })
+                                } else {
+                                    layer.msg(res.msg, { icon: 2, time: 1000 })
+                                }
+                            }
+                        })
+                    });
+                } else if (obj.event === 'edit') {
+                    form.val('demo-val-filter', {
+                        "ID": data.ID,
+                        "RoleName": data.RoleName, // "name": "value"
+                        "RoleCode": data.RoleCode,
+                    });
+                    layer.open({
+                        type: 1, // page 层类型
+                        area: ['500px', '300px'],
+                        title: '修改职位',
+                        shade: 0.6, // 遮罩透明度
+                        shadeClose: true, // 点击遮罩区域，关闭弹层
+                        /*maxmin: true,*/ // 允许全屏最小化
+                        anim: 0, // 0-6 的动画形式，-1 不开启
+                        content: $(".EditorAdd"),
+                        end: function () {
+                            $(".EditorAdd").hide();
+                        }
+                    });
+                    
+                } else if (obj.event === 'setting') {
+                    roleId = data.ID;
+                    /*console.log(data);*/
+                    layer.open({
+                        type: 1, // page 层类型
+                        area: ['1030px', '600px'],
+                        title: '设置角色菜单权限',
+                        shade: 0.6, // 遮罩透明度
+                        shadeClose: true, // 点击遮罩区域，关闭弹层
+                        /*maxmin: true,*/ // 允许全屏最小化
+                        anim: 0, // 0-6 的动画形式，-1 不开启
+                        content: $(".RoleMenu"),
+                        end: function () {
+                            $(".RoleMenu").hide();
+                        }
+                    });
+                }
+
+            });
+
+            // 转换时间戳为日期方法
+            function FormDateStringFun(dateString) {
+                if (dateString == null) {
+                    return "";
+                }
+                var datestr = dateString.substring(6, dateString.length - 2);
+                /*console.log(datestr);*/
+                var date = new Date(parseInt(datestr));
+                return util.toDateString(date, 'yyyy-MM-dd');
+            }
+
+            // 更新表格数据
+            function SearchFun() {
+                table.reload('table_job')
+            }
+        });
+    </script>
+
+</body>
+
+
+
+

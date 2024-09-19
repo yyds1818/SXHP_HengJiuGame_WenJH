@@ -1,0 +1,155 @@
+﻿
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>注册</title>
+</head>
+<body>
+    <style>
+        body {
+            background: url(../../Content/img/RegBgImg.jpg);
+            background-repeat: no-repeat;
+            background-size: cover; /* 让背景图基于容器大小伸缩 */
+            background-attachment: fixed;
+        }
+
+        form {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%,-50%);
+        }
+
+        .demo-reg-container {
+            width: 320px;
+            margin: 21px auto 0;
+        }
+
+        .demo-reg-other .layui-icon {
+            position: relative;
+            display: inline-block;
+            margin: 0 2px;
+            top: 2px;
+            font-size: 26px;
+        }
+    </style>
+    
+    <form class="layui-form">
+        <h1 style="padding: 8% 0;">新用户注册</h1>
+        <div class="layui-form-item">
+            <div class="layui-input-wrap">
+                <div class="layui-input-prefix">
+                    <i class="layui-icon layui-icon-username"></i>
+                </div>
+                <input type="text" name="UserName" value="" lay-verify="required" placeholder="姓名" autocomplete="off" class="layui-input" lay-affix="clear">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-input-wrap">
+                <div class="layui-input-prefix">
+                    <i class="layui-icon layui-icon-friends"></i>
+                </div>
+                <input type="text" name="IDCard" value="" placeholder="身份证号" autocomplete="off" class="layui-input" lay-affix="clear">
+            </div>
+        </div>
+        @*<div class="layui-form-item">
+            <div class="layui-input-wrap">
+                <div class="layui-input-prefix">
+                    <i class="layui-icon layui-icon-form"></i>
+                </div>
+                <input type="text" name="Native" value="" placeholder="籍贯" autocomplete="off" class="layui-input" lay-affix="clear">
+            </div>
+        </div>*@
+        <div class="layui-form-item">
+            <div class="layui-input-wrap">
+                <div class="layui-input-prefix">
+                    <i class="layui-icon layui-icon-cellphone"></i>
+                </div>
+                <input type="email" name="Email" value="" placeholder="邮箱" autocomplete="off" class="layui-input" lay-affix="clear">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-input-wrap">
+                <div class="layui-input-prefix">
+                    <i class="layui-icon layui-icon-email"></i>
+                </div>
+                <input type="tel" name="TelPhone" value="" placeholder="电话" autocomplete="off" class="layui-input" lay-affix="clear">
+            </div>
+        </div>
+        @*<div class="layui-form-item">
+            <div class="layui-input-wrap">
+                <div class="layui-input-prefix">
+                    <i class="layui-icon layui-icon-home"></i>
+                </div>
+                <input type="text" name="Address" value="" placeholder="家庭住址" autocomplete="off" class="layui-input" lay-affix="clear">
+            </div>
+        </div>*@
+        <div class="layui-form-item">
+            <div class="layui-input-wrap">
+                <div class="layui-input-prefix">
+                    <i class="layui-icon layui-icon-username"></i>
+                </div>
+                <input type="text" name="UserCode" value="" lay-verify="required" placeholder="用户账号" autocomplete="off" class="layui-input" lay-affix="clear">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-input-wrap">
+                <div class="layui-input-prefix">
+                    <i class="layui-icon layui-icon-password"></i>
+                </div>
+                <input type="password" name="PassWord" value="" lay-verify="required" placeholder="密码" autocomplete="off" class="layui-input" id="reg-password" lay-affix="eye">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <button class="layui-btn layui-btn-fluid" lay-submit lay-filter="demo-reg">注册</button>
+        </div>
+        <div class="layui-form-item demo-reg-other">
+            <label style="font-weight: bold;">社交账号注册</label>
+            <span style="padding: 0 21px 0 6px;">
+                <a href="javascript:;"><i class="layui-icon layui-icon-login-qq" style="color: #3492ed;"></i></a>
+                <a href="javascript:;"><i class="layui-icon layui-icon-login-wechat" style="color: #4daf29;"></i></a>
+                <a href="javascript:;"><i class="layui-icon layui-icon-login-weibo" style="color: #cf1900;"></i></a>
+            </span>
+            <a href="/Login/Index" style="color: gainsboro; font-weight: bold;">登录已有帐号</a>
+        </div>
+    </form>
+
+    <!-- 请勿在项目正式环境中引用该 layui.js 地址 -->
+    <script>
+        layui.use(function () {
+            var $ = layui.$;
+            var form = layui.form;
+            var layer = layui.layer;
+            var util = layui.util;
+
+            // 自定义验证规则
+
+
+            // 提交事件
+            form.on('submit(demo-reg)', function (data) {
+                var field = data.field; // 获取表单字段值
+
+                // 此处可执行 Ajax 等操作
+                // …
+                $.ajax({
+                    url: "/Login/RegisteBase",
+                    type: "post",
+                    data: field,
+                    success: function (reg) {
+                        if (reg.code == 0) {
+                            layer.msg(reg.msg, { icon: 1, time: 1000 }, function () {
+                                window.location.href = "/login/index";
+                            })
+                        } else {
+                            layer.msg(reg.msg, { icon: 2, time: 2000 })
+                        }
+                    }
+                })
+                return false; // 阻止默认 form 跳转
+            });
+        });
+    </script>
+</body>
+</html>

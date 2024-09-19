@@ -1,0 +1,156 @@
+﻿<style>
+    .RoleMenu {
+        display: none;
+    }
+
+    .layui-table-box {
+        background-color: white;
+    }
+
+    .layui-table-view .layui-table .layui-table-col-special {
+        text-align: center;
+    }
+
+    .layui-table-page {
+        background-color: white;
+    }
+</style>
+
+<body>
+    <div class="padhead" style="margin: 2%;">
+        <span class="layui-breadcrumb" lay-separator=">">
+            <a href="/Home/Blank">权限管理</a>
+            <a><cite>用户角色管理</cite></a>
+        </span>
+    </div>
+    <div class="demoTable" style="margin: 3%;">
+        用户名称:
+        <div class="layui-inline">
+            <input class="layui-input" name="username" id="username" autocomplete="off">
+        </div>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        用户代码:
+        <div class="layui-inline">
+            <input class="layui-input" name="usercode" id="usercode" autocomplete="off">
+        </div>
+        &nbsp;&nbsp;
+        <button class="layui-btn layui-bg-blue" data-type="reload" lay-on="Search"><i class="layui-icon layui-icon-search"></i>&nbsp;查询</button>
+    </div>
+
+    <div style="margin: 2%; ">
+        <table class="layui-hide" id="table_job" lay-filter="user"></table>
+    </div>
+
+    <div class="RoleMenu">
+        <table class="layui-hide" id="ID-table-demo" style="width:100%"></table>
+    </div>
+
+    <script type="text/html" id="barDemo">
+        <a class="layui-btn layui-btn-xs" lay-event="setting">设置角色</a>
+    </script>
+
+    <script>
+        layui.use('table', function () {
+            var table = layui.table;
+            var layer = layui.layer;
+            var util = layui.util;
+            var UidIns;
+
+            // 职位信息表格展示
+            table.render({
+                elem: '#table_job'
+                , url: '/UserRole/GetData'
+                , cols: [[
+                    { checkbox: true, fixed: true }
+                    , { type: 'numbers', title: 'ID', sort: true, fixed: true }
+                    , { field: 'UserName', width: '15%', title: '用户名称' }
+                    , { field: 'UserCode', width: '15%', title: '用户代码' }
+                    , {
+                        field: 'CreateDate', width: '15%', title: '创建时间', templet: function (d) {
+                            var date = FormDateStringFun(d.CreateDate)
+                            return util.toDateString(date, 'yyyy-MM-dd');
+                        }
+                    }
+                    , { field: 'RoleName', width: '30%', title: '角色菜单列表' }
+                    , { title: '操作', width: 205, toolbar: '#barDemo', fixed: 'right' }
+                ]]
+                , page: true
+                , height: 488
+            });
+
+            table.render({
+                elem: '#ID-table-demo',
+                url: '/RoleMenu/GetData',
+                page: true,
+                limit: 5,
+                height: '266px',
+                cols: [[
+                    { type: 'numbers', title: '序号' },
+                    { field: 'RoleCode', width: 170, title: '职位账号' },
+                    { field: 'RoleName', width: 170, title: '职位名称' },
+                    { field: 'MenuNames', width: 350, title: '菜单权限' }
+                ]]
+            });
+
+            table.on('row(ID-table-demo)', function (obj) {
+                var data = obj.data; // 获取当前行数据
+                /*console.log(data);*/
+                $.ajax({
+                    url: "/UserRole/AddRelation",
+                    type: "post",
+                    data: { uid: UidIns, rid: data.ID },
+                    success: function (res) {
+                        if (res.code == 0) {
+                            layer.msg(res.msg, { icon: 6, time: 1000 }, function () {
+                                layer.closeAll();
+                                table.reload('table_job');
+                            });
+                        } else {
+                            layer.msg(res.msg, { icon: 5, time: 1000 });
+                        }
+                    }
+
+                })
+                
+            });
+
+            // 按钮触发事件
+            util.on('lay-on', {
+                'Search': function () {
+                    table.reload('table_job', {
+                        where: {
+                            name: $("#username").val(),
+                            code: $("#usercode").val()
+                        }
+                    })
+                }
+            })
+
+            // 表格中的事件触发
+            table.on('tool(user)', function (obj) {
+                /*console.log(obj.data);*/
+                UidIns = obj.data.ID;
+                if (obj.event === 'setting') {
+                    layer.open({
+                        type: 1, // page 层类型
+                        area: ['760px', '350px'],
+                        title: '设置用户角色权限',
+                        shade: 0.6, // 遮罩透明度
+                        shadeClose: true, // 点击遮罩区域，关闭弹层
+                        /*maxmin: true,*/ // 允许全屏最小化
+                        anim: 0, // 0-6 的动画形式，-1 不开启
+                        content: $(".RoleMenu"),
+                        end: function () {
+                            $(".RoleMenu").hide();
+                        }
+                    });
+                }
+            });
+
+        })
+        // 更新表格数据
+        function SearchFun() {
+            table.reload('table_job')
+        }
+    </script>
+</body>
